@@ -21,22 +21,22 @@ This fork **materialises** those aliases into real files and adds checks to keep
 ## Install (per-user, recommended)
 
     mkdir -p ~/.local/share/icons
-    rm -rf ~/.local/share/icons/SevenIcons-compat
-    git clone https://github.com/<YOUR_GITHUB_USERNAME>/SevenIcons-compat ~/.local/share/icons/SevenIcons-compat
+    rm -rf ~/.local/share/icons/SevenIcons
+    git clone https://github.com/h4rm0n1c/SevenIcons ~/.local/share/icons/SevenIcons
 
     # Select it in Xfce (run inside your X session)
-    xfconf-query -c xsettings -p /Net/IconThemeName -s SevenIcons-compat
+    xfconf-query -c xsettings -p /Net/IconThemeName -s SevenIcons
     xfce4-panel -r
 
 You can also select it via: **Settings → Appearance → Icons**.
 
 ## Install (system-wide)
 
-    sudo rm -rf /usr/local/share/icons/SevenIcons-compat
-    sudo git clone https://github.com/<YOUR_GITHUB_USERNAME>/SevenIcons-compat /usr/local/share/icons/SevenIcons-compat
-
+    sudo rm -rf /usr/local/share/icons/SevenIcons
+    sudo git clone https://github.com/h4rm0n1c/SevenIcons /usr/local/share/icons/SevenIcons
+    
     # Optional cache build
-    sudo gtk-update-icon-cache -f /usr/local/share/icons/SevenIcons-compat
+    sudo gtk-update-icon-cache -f /usr/local/share/icons/SevenIcons
 
 ## Notes about icon caches
 
@@ -44,12 +44,12 @@ Xfce does not require an icon cache to use a theme.
 
 If you want to build one anyway:
 
-    gtk-update-icon-cache -f ~/.local/share/icons/SevenIcons-compat
+    gtk-update-icon-cache -f ~/.local/share/icons/SevenIcons
 
 If cache generation fails on your system, you can simply remove the cache file and continue using the theme:
 
-    rm -f ~/.local/share/icons/SevenIcons-compat/.icon-theme.cache \
-          ~/.local/share/icons/SevenIcons-compat/icon-theme.cache
+    rm -f ~/.local/share/icons/SevenIcons/.icon-theme.cache \
+          ~/.local/share/icons/SevenIcons/icon-theme.cache
 
 ## Development
 
