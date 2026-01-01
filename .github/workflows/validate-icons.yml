@@ -1,8 +1,9 @@
 name: Validate icon theme (no symlinks, real PNGs)
 
-on:
+"on":
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   validate:
@@ -14,7 +15,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-bin
+          sudo apt-get install -y libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-bin
 
       - name: Sanity: theme dir + index.theme present
         run: |
@@ -66,6 +67,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import os, sys
+
           bad = 0
           for root, _, files in os.walk("SevenIcons"):
               for fn in files:
@@ -83,10 +85,9 @@ jobs:
         run: |
           set -euo pipefail
           rm -f SevenIcons/icon-theme.cache SevenIcons/.icon-theme.cache || true
-          gtk-update-icon-cache -f SevenIcons
+          gtk-update-icon-cache -f -v SevenIcons
 
-      - name: Validate GTK icon cache
+      - name: Validate GTK icon cache artifact exists
         run: |
           set -euo pipefail
-          gtk-update-icon-cache -v SevenIcons
-          ls -la SevenIcons | grep -E 'icon-theme\.cache|\.icon-theme\.cache' || true
+          ls -la SevenIcons | grep -E 'icon-theme\.cache|\.icon-theme\.cache'
