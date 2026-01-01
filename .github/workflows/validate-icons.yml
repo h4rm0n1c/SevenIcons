@@ -14,7 +14,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-common
-          sudo gdk-pixbuf-query-loaders --update-cache
+
+          # Find gdk-pixbuf-query-loaders (name/path varies)
+          if command -v gdk-pixbuf-query-loaders >/dev/null 2>&1; then
+            QL="$(command -v gdk-pixbuf-query-loaders)"
+          else
+            QL="$(ls -1 /usr/lib/*/gdk-pixbuf-2.0/*/query-loaders 2>/dev/null | head -n 1 || true)"
+          fi
+
+          echo "QUERY_LOADERS=${QL:-<not found>}"
+
+          # Update the loader cache if we found the tool
+          if [ -n "${QL:-}" ] && [ -x "$QL" ]; then
+            sudo "$QL" --update-cache || true
+          fi
 
       - name: Fail if any symlinks exist
         run: |
