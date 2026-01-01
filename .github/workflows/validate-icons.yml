@@ -29,7 +29,8 @@ jobs:
             librsvg2-bin
           # Some Ubuntu containers do not refresh pixbuf loader caches automatically
           # which can cause gtk-update-icon-cache to fail to parse SVGs.
-          $SUDO gdk-pixbuf-query-loaders --update-cache || gdk-pixbuf-query-loaders --update-cache
+          GDK_QUERY=$(command -v gdk-pixbuf-query-loaders || echo /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders)
+          $SUDO "$GDK_QUERY" --update-cache || "$GDK_QUERY" --update-cache
 
       - name: Verify theme directory and index
         run: |
