@@ -17,21 +17,14 @@ theme_dir = Path("SevenIcons")  # change if you changed THEME_DIR above
 index = theme_dir / "index.theme"
 
 ctx_map = {
-  "actions":"Actions",
-  "animations":"Animations",
-  "apps":"Applications",
-  "categories":"Categories",
-  "devices":"Devices",
-  "emblems":"Emblems",
-  "emotes":"Emotes",
-  "mimes":"MimeTypes",
-  "places":"Places",
-  "status":"Status",
-  "notifications":"Notifications",
-  "panel":"Panel",
-  "stock":"Stock",
-  "tools":"Tools",
-  "menu":"Menu",
+  "actions": "Actions",
+  "apps": None,
+  "categories": None,
+  "devices": "Devices",
+  "menu": "Menu",
+  "mimes": "MimeTypes",
+  "places": "FileSystems",
+  "status": None,
 }
 
 dirs = []
@@ -39,7 +32,7 @@ sections = []
 
 for top in sorted([p for p in theme_dir.iterdir() if p.is_dir()]):
   topname = top.name
-  context = ctx_map.get(topname, "Other")
+  context = ctx_map.get(topname)
   for sub in sorted([p for p in top.iterdir() if p.is_dir()]):
     subname = sub.name
     rel = f"{topname}/{subname}"
@@ -57,16 +50,17 @@ for top in sorted([p for p in theme_dir.iterdir() if p.is_dir()]):
 
 out = []
 out.append("[Icon Theme]\n")
-out.append("Name=SevenIcons-compat\n")
-out.append("Comment=SevenIcons compatibility fork (no symlink/alias surprises)\n")
+out.append("Name=SevenIcons\n")
+out.append("Comment=SevenIcons compat index (GTK cache safe)\n")
 out.append("Inherits=Adwaita,hicolor\n")
 out.append("Directories=" + ",".join(dirs) + "\n\n")
 
 for name, size, context, typ, mn, mx in sections:
   out.append(f"[{name}]\n")
   out.append(f"Size={size}\n")
-  out.append(f"Context={context}\n")
   out.append(f"Type={typ}\n")
+  if context:
+    out.append(f"Context={context}\n")
   if typ == "Scalable":
     out.append(f"MinSize={mn}\n")
     out.append(f"MaxSize={mx}\n")
