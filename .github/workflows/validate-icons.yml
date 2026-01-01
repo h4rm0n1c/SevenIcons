@@ -10,38 +10,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install GTK / gdk-pixbuf tools (incl. SVG loader)
+      - name: Install GTK + pixbuf + SVG loader
         run: |
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y \
             libgtk-3-bin \
+            libgdk-pixbuf-2.0-0 \
             libgdk-pixbuf2.0-bin \
             librsvg2-common librsvg2-2 librsvg2-bin
 
-      - name: Ensure gdk-pixbuf-query-loaders is on PATH + refresh loaders cache
+      - name: Confirm gdk-pixbuf loaders cache includes SVG loader
         run: |
           set -euo pipefail
 
-          if ! command -v gdk-pixbuf-query-loaders >/dev/null 2>&1; then
-            QL="$(dpkg -L libgdk-pixbuf2.0-bin | grep -m1 '/gdk-pixbuf-query-loaders$' || true)"
-            if [ -z "$QL" ]; then
-              echo "ERROR: gdk-pixbuf-query-loaders not found in libgdk-pixbuf2.0-bin"
-              dpkg -L libgdk-pixbuf2.0-bin | sed -n '1,200p'
-              exit 1
-            fi
-            sudo ln -sf "$QL" /usr/local/bin/gdk-pixbuf-query-loaders
+          # find loaders.cache (path varies by arch/version)
+          CACHE="$(find /usr/lib -type f -name 'loaders.cache' -path '*gdk-pixbuf-2.0*' | head -n 1 || true)"
+          echo "LOADERS_CACHE=${CACHE:-<not found>}"
+          test -n "$CACHE"
+
+          # must contain svg loader reference
+          if ! grep -qi svg "$CACHE"; then
+            echo "ERROR: loaders.cache has no SVG loader entry"
+            echo "--- cache head:"
+            sed -n '1,200p' "$CACHE"
+            exit 1
           fi
-
-          echo "gdk-pixbuf-query-loaders=$(command -v gdk-pixbuf-query-loaders)"
-          sudo gdk-pixbuf-query-loaders --update-cache || true
-
-          echo "loaders.cache locations:"
-          find /usr/lib -type f -name 'loaders.cache' -path '*gdk-pixbuf-2.0*' -print || true
-
-          echo "SVG loader present in cache? (best-effort)"
-          find /usr/lib -type f -name 'loaders.cache' -path '*gdk-pixbuf-2.0*' -print0 \
-            | xargs -0 -I{} sh -c "echo '--- {}'; grep -i svg {} || true"
 
       - name: Fail if any symlinks exist
         run: |
@@ -95,8 +89,8 @@ jobs:
             fi
           done < <(find SevenIcons -type f -iname '*.svg' -print0)
 
-      - name: Ensure gtk icon cache can be built
+      - name: Ensure gtk icon cache can be built (verbose)
         run: |
           set -euo pipefail
           rm -f SevenIcons/.icon-theme.cache SevenIcons/icon-theme.cache || true
-          G_MESSAGES_DEBUG=all gtk-update-icon-cache -f -v SevenIcons
+          gtk-update-icon-cache -f -v SevenIcons
