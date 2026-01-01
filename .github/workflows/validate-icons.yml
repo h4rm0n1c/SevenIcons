@@ -10,31 +10,65 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install gtk + pixbuf + SVG loader
+      - name: Install GTK / gdk-pixbuf tools (incl. SVG loader)
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-common
+          sudo apt-get install -y \
+            libgtk-3-bin \
+            libgdk-pixbuf2.0-bin \
+            librsvg2-common librsvg2-2 librsvg2-bin
 
-          # Find gdk-pixbuf-query-loaders (name/path varies)
-          if command -v gdk-pixbuf-query-loaders >/dev/null 2>&1; then
-            QL="$(command -v gdk-pixbuf-query-loaders)"
-          else
-            QL="$(ls -1 /usr/lib/*/gdk-pixbuf-2.0/*/query-loaders 2>/dev/null | head -n 1 || true)"
+      - name: Ensure gdk-pixbuf-query-loaders is on PATH + refresh loaders cache
+        run: |
+          set -euo pipefail
+
+          if ! command -v gdk-pixbuf-query-loaders >/dev/null 2>&1; then
+            QL="$(dpkg -L libgdk-pixbuf2.0-bin | grep -m1 '/gdk-pixbuf-query-loaders$' || true)"
+            if [ -z "$QL" ]; then
+              echo "ERROR: gdk-pixbuf-query-loaders not found in libgdk-pixbuf2.0-bin"
+              dpkg -L libgdk-pixbuf2.0-bin | sed -n '1,200p'
+              exit 1
+            fi
+            sudo ln -sf "$QL" /usr/local/bin/gdk-pixbuf-query-loaders
           fi
 
-          echo "QUERY_LOADERS=${QL:-<not found>}"
+          echo "gdk-pixbuf-query-loaders=$(command -v gdk-pixbuf-query-loaders)"
+          sudo gdk-pixbuf-query-loaders --update-cache || true
 
-          # Update the loader cache if we found the tool
-          if [ -n "${QL:-}" ] && [ -x "$QL" ]; then
-            sudo "$QL" --update-cache || true
-          fi
+          echo "loaders.cache locations:"
+          find /usr/lib -type f -name 'loaders.cache' -path '*gdk-pixbuf-2.0*' -print || true
+
+          echo "SVG loader present in cache? (best-effort)"
+          find /usr/lib -type f -name 'loaders.cache' -path '*gdk-pixbuf-2.0*' -print0 \
+            | xargs -0 -I{} sh -c "echo '--- {}'; grep -i svg {} || true"
 
       - name: Fail if any symlinks exist
         run: |
+          set -euo pipefail
           test "$(find SevenIcons -type l | wc -l)" -eq 0
+
+      - name: Fail if any paths contain whitespace (spaces, tabs, newlines)
+        run: |
+          set -euo pipefail
+          find SevenIcons -print0 | python3 - <<'PY'
+          import sys
+          bad=[]
+          for p in sys.stdin.buffer.read().split(b"\0"):
+            if not p: continue
+            s=p.decode("utf-8","surrogateescape")
+            if any(c.isspace() for c in s):
+              bad.append(s)
+          if bad:
+            print("Whitespace in paths (rename these):")
+            for s in bad[:200]:
+              print("  ", s)
+            sys.exit(1)
+          PY
 
       - name: Fail if any .png is not a real PNG (magic header)
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           import os, sys
           bad = 0
@@ -50,7 +84,19 @@ jobs:
           sys.exit(bad)
           PY
 
+      - name: Fail if any SVG cannot be rendered by librsvg
+        run: |
+          set -euo pipefail
+          out="/tmp/rsvg_probe.png"
+          while IFS= read -r -d '' s; do
+            if ! rsvg-convert -o "$out" "$s" >/dev/null 2>&1; then
+              echo "BAD_SVG: $s"
+              exit 1
+            fi
+          done < <(find SevenIcons -type f -iname '*.svg' -print0)
+
       - name: Ensure gtk icon cache can be built
         run: |
+          set -euo pipefail
           rm -f SevenIcons/.icon-theme.cache SevenIcons/icon-theme.cache || true
-          gtk-update-icon-cache -f SevenIcons
+          G_MESSAGES_DEBUG=all gtk-update-icon-cache -f -v SevenIcons
