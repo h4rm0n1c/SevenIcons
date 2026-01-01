@@ -12,60 +12,65 @@ jobs:
 
       - name: Install gtk tools
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-bin
+          sudo apt-get install -y libgtk-3-bin
 
-      - name: Locate theme directory
-        id: theme
+      - name: Sanity: theme dir + index.theme present
         run: |
           set -euo pipefail
-          # Find the first index.theme in the repo (should be the theme root)
-          THEME_DIR="$(dirname "$(find . -type f -name index.theme -print -quit)")"
-          test -n "$THEME_DIR"
-          echo "THEME_DIR=$THEME_DIR"
-          echo "theme_dir=$THEME_DIR" >> "$GITHUB_OUTPUT"
-          test -f "$THEME_DIR/index.theme"
+          test -d SevenIcons
+          test -f SevenIcons/index.theme
 
       - name: Fail if any symlinks exist
         run: |
           set -euo pipefail
-          THEME_DIR="${{ steps.theme.outputs.theme_dir }}"
-          test "$(find "$THEME_DIR" -type l | wc -l)" -eq 0
+          test "$(find SevenIcons -type l | wc -l)" -eq 0
 
-      - name: Fail if any paths contain whitespace
+      - name: Fail if any paths contain whitespace or non-UTF8 bytes
         run: |
           set -euo pipefail
-          THEME_DIR="${{ steps.theme.outputs.theme_dir }}"
           python3 - <<'PY'
           import os, sys
-          root = os.environ["THEME_DIR"]
-          bad = []
+
+          root = "SevenIcons"
+          bad_ws = []
+          bad_utf8 = []
+
+          def has_surrogates(s: str) -> bool:
+              return any(0xDC80 <= ord(ch) <= 0xDCFF for ch in s)
+
           for dirpath, dirnames, filenames in os.walk(root):
               for name in list(dirnames) + list(filenames):
                   p = os.path.join(dirpath, name)
                   if any(ch.isspace() for ch in p):
-                      bad.append(p)
-          if bad:
+                      bad_ws.append(p)
+                  if has_surrogates(p):
+                      bad_utf8.append(p)
+
+          if bad_ws:
               print("Whitespace in paths (rename these):")
-              for p in bad:
-                  print(" ", p)
-              sys.exit(1)
+              for p in bad_ws[:200]:
+                  print("  ", p)
+
+          if bad_utf8:
+              print("Non-UTF8 paths detected (rename these):")
+              for p in bad_utf8[:200]:
+                  print("  ", p)
+
+          sys.exit(1 if (bad_ws or bad_utf8) else 0)
           PY
-        env:
-          THEME_DIR: ${{ steps.theme.outputs.theme_dir }}
 
       - name: Fail if any .png is not a real PNG (magic header)
         run: |
           set -euo pipefail
-          THEME_DIR="${{ steps.theme.outputs.theme_dir }}"
           python3 - <<'PY'
           import os, sys
-          root = os.environ["THEME_DIR"]
           bad = 0
-          for dirpath, _, files in os.walk(root):
+          for root, _, files in os.walk("SevenIcons"):
               for fn in files:
                   if fn.lower().endswith(".png"):
-                      p = os.path.join(dirpath, fn)
+                      p = os.path.join(root, fn)
                       with open(p, "rb") as f:
                           sig = f.read(8)
                       if sig != b"\x89PNG\r\n\x1a\n":
@@ -73,13 +78,15 @@ jobs:
                           bad = 1
           sys.exit(bad)
           PY
-        env:
-          THEME_DIR: ${{ steps.theme.outputs.theme_dir }}
 
-      - name: Ensure gtk icon cache can be built
+      - name: Build GTK icon cache
         run: |
           set -euo pipefail
-          THEME_DIR="${{ steps.theme.outputs.theme_dir }}"
-          rm -f "$THEME_DIR/.icon-theme.cache" "$THEME_DIR/icon-theme.cache" || true
-          gtk-update-icon-cache -f -v "$THEME_DIR"
-          ls -la "$THEME_DIR" | grep -E 'icon-theme\.cache|\.icon-theme\.cache' || true
+          rm -f SevenIcons/icon-theme.cache SevenIcons/.icon-theme.cache || true
+          gtk-update-icon-cache -f SevenIcons
+
+      - name: Validate GTK icon cache
+        run: |
+          set -euo pipefail
+          gtk-update-icon-cache -v SevenIcons
+          ls -la SevenIcons | grep -E 'icon-theme\.cache|\.icon-theme\.cache' || true
