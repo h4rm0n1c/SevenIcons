@@ -13,7 +13,7 @@ jobs:
       - name: Install gtk tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y gtk-update-icon-cache
+          sudo apt-get install -y libgtk-3-bin
 
       - name: Fail if any symlinks exist
         run: |
@@ -38,4 +38,5 @@ jobs:
 
       - name: Ensure gtk icon cache can be built
         run: |
+          rm -f SevenIcons/.icon-theme.cache SevenIcons/icon-theme.cache || true
           gtk-update-icon-cache -f SevenIcons
