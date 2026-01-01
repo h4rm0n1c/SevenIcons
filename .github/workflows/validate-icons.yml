@@ -8,14 +8,25 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    container: ubuntu:22.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Install gtk tools
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-bin
+          if command -v sudo >/dev/null 2>&1; then
+            SUDO=sudo
+          else
+            SUDO=""
+          fi
+          $SUDO apt-get update
+          $SUDO apt-get install -y --no-install-recommends libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-bin
+          # Some Ubuntu containers do not refresh pixbuf loader caches automatically
+          # which can cause gtk-update-icon-cache to fail to parse SVGs.
+          $SUDO gdk-pixbuf-query-loaders --update-cache || gdk-pixbuf-query-loaders --update-cache
 
       - name: Sanity: theme dir + index.theme present
         run: |
