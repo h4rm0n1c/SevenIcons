@@ -1,34 +1,37 @@
 name: Validate icon theme (no symlinks, real PNGs)
 
-on:
-  push:
-  pull_request:
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     container: ubuntu:22.04
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install gtk tools
+      - name: Install GTK icon tooling
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           set -euo pipefail
           if command -v sudo >/dev/null 2>&1; then
-            SUDO=sudo
+            SUDO="sudo"
           else
             SUDO=""
           fi
           $SUDO apt-get update
-          $SUDO apt-get install -y --no-install-recommends libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-bin
+          $SUDO apt-get install -y --no-install-recommends \
+            libgtk-3-bin \
+            libgdk-pixbuf2.0-bin \
+            librsvg2-bin
           # Some Ubuntu containers do not refresh pixbuf loader caches automatically
           # which can cause gtk-update-icon-cache to fail to parse SVGs.
           $SUDO gdk-pixbuf-query-loaders --update-cache || gdk-pixbuf-query-loaders --update-cache
 
-      - name: Sanity: theme dir + index.theme present
+      - name: Verify theme directory and index
         run: |
           set -euo pipefail
           test -d SevenIcons
