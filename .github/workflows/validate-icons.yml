@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install GTK icon tooling
+      - name: Install Python and GTK tooling
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -24,13 +24,19 @@ jobs:
           fi
           $SUDO apt-get update
           $SUDO apt-get install -y --no-install-recommends \
+            python3-minimal \
             libgtk-3-bin \
             libgdk-pixbuf2.0-bin \
             librsvg2-bin
-          # Some Ubuntu containers do not refresh pixbuf loader caches automatically
+          # Some Ubuntu containers do not refresh pixbuf loader caches automatically,
           # which can cause gtk-update-icon-cache to fail to parse SVGs.
-          GDK_QUERY=$(command -v gdk-pixbuf-query-loaders || echo /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders)
-          $SUDO "$GDK_QUERY" --update-cache || "$GDK_QUERY" --update-cache
+          GDK_QUERY=$(command -v gdk-pixbuf-query-loaders || true)
+          if [ -z "$GDK_QUERY" ] && [ -x /usr/lib/"$(uname -m)"-linux-gnu/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders ]; then
+            GDK_QUERY=/usr/lib/"$(uname -m)"-linux-gnu/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders
+          fi
+          if [ -n "$GDK_QUERY" ] && [ -x "$GDK_QUERY" ]; then
+            $SUDO "$GDK_QUERY" --update-cache || "$GDK_QUERY" --update-cache
+          fi
 
       - name: Verify theme directory and index
         run: |
