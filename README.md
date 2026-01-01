@@ -1,4 +1,4 @@
-# SevenIcons-compat
+# SevenIcons
 
 A “no surprises” compatibility fork of **SevenIcons** that works reliably on Linux desktops (including Xfce on Devuan/Debian) by **removing symlink/alias traps** and ensuring the theme contains **real icon files**.
 
@@ -20,9 +20,13 @@ This fork **materialises** those aliases into real files and adds checks to keep
 
 ## Install (per-user, recommended)
 
+Download the repo, then copy **only the theme directory** into your icons path (avoid copying helper scripts from the repo root).
+
+    tmpdir=$(mktemp -d)
+    git clone --depth 1 https://github.com/h4rm0n1c/SevenIcons "$tmpdir"
     mkdir -p ~/.local/share/icons
     rm -rf ~/.local/share/icons/SevenIcons
-    git clone https://github.com/h4rm0n1c/SevenIcons ~/.local/share/icons/SevenIcons
+    cp -a "$tmpdir/SevenIcons" ~/.local/share/icons/SevenIcons
 
     # Select it in Xfce (run inside your X session)
     xfconf-query -c xsettings -p /Net/IconThemeName -s SevenIcons
@@ -32,9 +36,11 @@ You can also select it via: **Settings → Appearance → Icons**.
 
 ## Install (system-wide)
 
+    tmpdir=$(mktemp -d)
+    git clone --depth 1 https://github.com/h4rm0n1c/SevenIcons "$tmpdir"
     sudo rm -rf /usr/local/share/icons/SevenIcons
-    sudo git clone https://github.com/h4rm0n1c/SevenIcons /usr/local/share/icons/SevenIcons
-    
+    sudo cp -a "$tmpdir/SevenIcons" /usr/local/share/icons/SevenIcons
+
     # Optional cache build
     sudo gtk-update-icon-cache -f /usr/local/share/icons/SevenIcons
 
