@@ -1,6 +1,6 @@
 name: Validate icon theme (no symlinks, real PNGs)
 
-"on":
+on:
   push:
   pull_request:
   workflow_dispatch:
