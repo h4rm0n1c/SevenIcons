@@ -10,10 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install gtk tools
+      - name: Install gtk + pixbuf + SVG loader
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-bin
+          sudo apt-get install -y libgtk-3-bin libgdk-pixbuf2.0-bin librsvg2-common
+          sudo gdk-pixbuf-query-loaders --update-cache
 
       - name: Fail if any symlinks exist
         run: |
