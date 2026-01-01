@@ -1,0 +1,41 @@
+name: Validate icon theme (no symlinks, real PNGs)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gtk tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gtk-update-icon-cache
+
+      - name: Fail if any symlinks exist
+        run: |
+          test "$(find SevenIcons -type l | wc -l)" -eq 0
+
+      - name: Fail if any .png is not a real PNG (magic header)
+        run: |
+          python3 - <<'PY'
+          import os, sys
+          bad = 0
+          for root, _, files in os.walk("SevenIcons"):
+            for fn in files:
+              if fn.lower().endswith(".png"):
+                p = os.path.join(root, fn)
+                with open(p, "rb") as f:
+                  sig = f.read(8)
+                if sig != b"\x89PNG\r\n\x1a\n":
+                  print("NOT_PNG:", p)
+                  bad = 1
+          sys.exit(bad)
+          PY
+
+      - name: Ensure gtk icon cache can be built
+        run: |
+          gtk-update-icon-cache -f SevenIcons
