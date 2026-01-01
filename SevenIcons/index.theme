@@ -2,7 +2,7 @@
 Name=SevenIcons
 Comment=SevenIcons compat index (GTK cache safe)
 Inherits=Adwaita,hicolor
-Directories=actions/16,actions/24,apps/16,apps/32,categories/16,categories/32,devices/16,devices/32,devices/64,mimes/16,mimes/32,places/16,places/32,status/16
+Directories=actions/16,actions/24,apps/16,apps/32,categories/16,categories/32,devices/16,devices/32,devices/64,menu/16,mimes/16,mimes/32,places/16,places/32,status/16
 
 [actions/16]
 Size=16
@@ -44,6 +44,11 @@ Context=Devices
 Size=64
 Type=Fixed
 Context=Devices
+
+[menu/16]
+Size=16
+Type=Fixed
+Context=Menu
 
 [mimes/16]
 Size=16
