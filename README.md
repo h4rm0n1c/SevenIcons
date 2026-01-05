@@ -1,7 +1,9 @@
 # SevenIcons
 
 A “no surprises” compatibility fork of **SevenIcons** that works reliably on Linux desktops (including Xfce on Devuan/Debian) by **removing symlink/alias traps** and ensuring the theme contains **real icon files**.
+
 New: I have started replacing more of the default/fallback icons in this pack with icons pulled from an old install of Mac OS 7, some manual editing was required in some places like where icon masks were missing preventing export, this is now the most comprehensive Mac OS 7 Icon pack on Github as far as I know.
+
 We still have a lot of work to do, there's a load of text formats to do with coding that need classic style icons if they can't be retrieved.
 
 ## Why this fork exists
