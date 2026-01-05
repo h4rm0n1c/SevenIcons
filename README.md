@@ -18,6 +18,14 @@ This fork **materialises** those aliases into real files and adds checks to keep
 - **CI validation** to prevent regressions.
 - Keeps `Inherits=Adwaita,hicolor` so missing icons fall back cleanly on Debian/Devuan systems.
 
+##  NEW Icons that have been added since fork
+- Images: image-bmp.png, image-gif.png, image-jpeg.png, image-jpeg2000.png, image-png.png, image-tiff.png, image-x-* variants, plus gnome-mime-image-{bmp,jpeg,png,x-cmu-raster,x-portable-bitmap,x-psd,x-xpixmap}.
+- Archives: application-{7zip,epub+zip,vnd.ms-cab-compressed,x-7z-compressed,x-arj,x-bzip(-compressed-tar),x-compressed-tar,x-gzip,x-jar,x-java-archive,x-lzma(-compressed-tar),x-lzop,x-rar,x-stuffit,x-zip,zip}, archive.png, folder_tar.png, rar.png, tar.png, and gnome-mime-application-* counterparts for the same archive families.
+- Fonts: font.png, font-x-generic.png, font_bitmap.png, font_truetype.png, font_type1.png, gnome-mime-application-x-font-{afm,bdf,linux-psf,pcf,sunos-news,ttf}, gnome-mime-x-font-afm.png.
+- Audio: application-ogg.png, audio-mpeg.png, audio-x-{adpcm,flac+ogg,generic,mp3-playlist,mpeg,mpegurl,ms-wma,playlist,scpls,smart-playlist,speex+ogg,vorbis+ogg,wav}, gnome-mime-application-ogg.png, media-audio.png.
+- Library/Object: application-x-object.png (library/shared-object replacement).
+- PDF: application-pdf.png, gnome-mime-application-pdf.png.
+
 ## Install (per-user, recommended)
 
 Download the repo, then copy **only the theme directory** into your icons path (avoid copying helper scripts from the repo root).
