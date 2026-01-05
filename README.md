@@ -41,12 +41,11 @@ You can also select it via: **Settings → Appearance → Icons**.
     sudo rm -rf /usr/local/share/icons/SevenIcons
     sudo cp -a "$tmpdir/SevenIcons" /usr/local/share/icons/SevenIcons
 
-    # Optional cache build
-    sudo gtk-update-icon-cache -f /usr/local/share/icons/SevenIcons
-
 ## Notes about icon caches
 
 Xfce does not require an icon cache to use a theme.
+It is NOT reccomended that you generate a cache.
+I had issues with this bringing down my entire X Session, so, beware.
 
 If you want to build one anyway:
 
