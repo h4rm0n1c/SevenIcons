@@ -1,4 +1,4 @@
-# SevenIcons
+# SevenIcons - 30th Anniversary of Mac OS 7.5.3's Release, Edition
 
 A “no surprises” compatibility fork of **SevenIcons** that works reliably on Linux desktops (including Xfce on Devuan/Debian) by **removing symlink/alias traps** and ensuring the theme contains **real icon files**.
 
