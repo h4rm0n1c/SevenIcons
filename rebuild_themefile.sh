@@ -7,7 +7,7 @@ INDEX="$THEME_DIR/index.theme"
 test -d "$THEME_DIR"
 test -f "$INDEX"
 
-cp -a "$INDEX" "$INDEX.bak.$(date +%Y%m%d_%H%M%S)"
+cp -a "$INDEX" "/tmp/index.theme.bak.$(date +%Y%m%d_%H%M%S)"
 
 python3 - <<'PY'
 import os
